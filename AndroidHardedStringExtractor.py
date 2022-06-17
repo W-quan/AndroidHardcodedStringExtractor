@@ -16,11 +16,10 @@ Android Hardcoded String Extractor
 3. `python3 AndroidHardedcodeStringExtractor.py`
 
 4. 剩下靠勤劳的双手
-
 '''
 
 # rg/ack 搜索生成的文件
-grep_file = 'grep_file.text'
+grep_file = 'grep_file.txt'
 
 project_path = '/Users/wzq/Workspace/Android/Ermeng_Android_Client/'
 strings_file = f'{project_path}app/src/main/res/values/strings.xml'
@@ -67,6 +66,7 @@ def extractJavaFileString(filePath, line, key, text):
         f.writelines(contents)
 
 def extractKotlinFileString(filePath, line, key, text):
+    # kotlin字符串模板不支持变量提取
     with open(filePath, 'r+') as f:
         contents = f.readlines()
         contents[line] = contents[line].replace(text, f'ELContext.context?.getString(R.string.{key})')
