@@ -1,0 +1,2 @@
+# AndroidHardcodedStringExtractor
+Android Hardcoded String Extractor
