@@ -1,5 +1,3 @@
-import os,re, hashlib
-
 '''
 Android Hardcoded String Extractor
 
@@ -18,11 +16,14 @@ Android Hardcoded String Extractor
 4. 剩下靠勤劳的双手
 '''
 
+import os,re, hashlib
+from html import escape
+
 # rg/ack 搜索生成的文件
-grep_file = 'grep_file.txt'
+grep_file_path = 'grep_file.txt'
 
 project_path = '/Users/wzq/Workspace/Android/Ermeng_Android_Client/'
-strings_file = f'{project_path}app/src/main/res/values/strings.xml'
+strings_file_path = f'{project_path}app/src/main/res/values/strings.xml'
 
 # rg/ack 搜索出来的文件， 内容分隔符
 split_pattern = r'    +'
@@ -95,23 +96,36 @@ def replaceLayoutFileHardcodedString(filePath, line, regex, key):
     f.writelines(lines)
     f.close()
 
+# strings.xml 先删除 "</resources>", 再添加新行
+with open(strings_file_path, 'r+') as f:
+    d = f.readlines()
+    f.seek(0)
+    for line in d:
+        if '</resources>' not in line:
+            f.write(line)
+    f.write('\n')
+    f.truncate()
+
+stringsResourcesFile = open(strings_file_path, "a+")
+
 def extractString(key, value):
     if key in stringDict:
         print(f'重复的key: {key} {value}')
         return
 
-    file = open(strings_file, "a+")
+    # Html encode
+    if '</' in value:
+        value = escape(value)
+
     line = f'    <string name="{key_prefix + key}">{value}</string>\n'
-    file.write(line)
-    file.flush()
-    file.close()
+    stringsResourcesFile.write(line)
 
     stringDict[key] = value
 
 # 只是计数的
 count = 0
 
-for line in open("grep_file.txt"): 
+for line in open(grep_file_path): 
     print('\n\n==========================\n\n')
     print(count)
     count += 1
@@ -143,3 +157,7 @@ for line in open("grep_file.txt"):
         # 替换代码中的Hardcoded string
         replaceCodeFileString(filePath, line, key_prefix + md5, string)
 
+# strings.xml 完成
+stringsResourcesFile.write('</resources>')
+stringsResourcesFile.flush()
+stringsResourcesFile.close()
